@@ -21,7 +21,7 @@ All paginated lists return a standard envelope:
 
 Protected endpoints require the session JWT issued by Better Auth in the header:
 
-```
+```text
 Authorization: Bearer <token>
 ```
 
@@ -78,7 +78,7 @@ Lightweight payload for map markers, no pagination.
 
 ## Auth (managed by Better Auth)
 
-```
+```text
 POST  /api/auth/sign-up
 POST  /api/auth/sign-in
 POST  /api/auth/sign-out
@@ -159,6 +159,7 @@ Query params:
 ```
 
 When `action: "approve"`, the backend executes atomically in a single transaction:
+
 1. Copies fields from the proposal and creates the record in `events`
 2. Sets `proposals.status = "approved"`, `proposals.reviewedAt = now()`, `proposals.eventId = <new id>`
 
@@ -175,6 +176,7 @@ When `action: "approve"`, the backend executes atomically in a single transactio
 The backend generates a presigned URL via the `StorageService`. The frontend uploads directly to the provider and then includes the `key` in the proposal body.
 
 **Response:**
+
 ```json
 {
   "key": "covers/abc123.jpg",
