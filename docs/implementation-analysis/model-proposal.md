@@ -1,27 +1,27 @@
-# Data Model — Proposta
+# Data Model — Proposal
 
-## Decisioni preliminari
+## Preliminary Decisions
 
-| Tema | Decisione |
+| Topic | Decision |
 | --- | --- |
-| Proposals vs Events | Tabelle separate — la tabella pubblica `events` contiene solo eventi approvati |
-| Coordinate | Map picker (lat/lng espliciti); campo `locationName` compatibile con geocoding futuro senza migrazioni |
-| Blob storage | Chiave opaca (`coverImageKey`) risolta in URL dal `StorageService` — provider intercambiabile |
+| Proposals vs Events | Separate tables — the public `events` table contains approved events only |
+| Coordinates | Map picker (explicit lat/lng); `locationName` field is compatible with future server-side geocoding without migrations |
+| Blob storage | Opaque key (`coverImageKey`) resolved to a URL by the `StorageService` — provider is swappable |
 
 ---
 
-## Tabelle Better Auth (generate automaticamente)
+## Better Auth Tables (auto-generated)
 
-Better Auth con Drizzle genera e gestisce autonomamente:
+Better Auth with Drizzle generates and manages autonomously:
 
-- `user` — id, email, name, emailVerified, createdAt — estesa con il campo `role`
+- `user` — id, email, name, emailVerified, createdAt — extended with the `role` field
 - `session`, `account`, `verification`
 
-Il campo `role: 'user' | 'admin'` viene aggiunto come estensione sulla tabella `user` tramite il sistema di plugin di Better Auth.
+The `role: 'user' | 'admin'` field is added as an extension on the `user` table via Better Auth's plugin system.
 
 ---
 
-## Schema Drizzle
+## Drizzle Schema
 
 ### Enums
 
@@ -40,7 +40,7 @@ const proposalStatusEnum = pgEnum('proposal_status', [
 
 ### events
 
-Solo eventi approvati e pubblicati.
+Approved and published events only.
 
 ```ts
 const events = pgTable('events', {
@@ -53,13 +53,13 @@ const events = pgTable('events', {
   endDate:           date().notNull(),
   region:            regionEnum().notNull(),
   officialUrl:       text(),
-  coverImageKey:     text(),            // es. "covers/abc123.jpg"
+  coverImageKey:     text(),            // e.g. "covers/abc123.jpg"
 
-  startLocationName: text().notNull(),  // label display + input geocoding futuro
+  startLocationName: text().notNull(),  // display label + future geocoding input
   startLat:          numeric({ precision: 9, scale: 6 }).notNull(),
   startLng:          numeric({ precision: 9, scale: 6 }).notNull(),
 
-  endLocationName:   text(),            // null = percorso circolare
+  endLocationName:   text(),            // null = circular route
   endLat:            numeric({ precision: 9, scale: 6 }),
   endLng:            numeric({ precision: 9, scale: 6 }),
 
@@ -70,7 +70,7 @@ const events = pgTable('events', {
 
 ### proposals
 
-Proposte utente con ciclo di vita pending → approved | rejected.
+User submissions with lifecycle: pending → approved | rejected.
 
 ```ts
 const proposals = pgTable('proposals', {
@@ -102,7 +102,7 @@ const proposals = pgTable('proposals', {
 
 ### saved_events
 
-Calendario personale degli utenti registrati.
+Personal calendar for registered users.
 
 ```ts
 const savedEvents = pgTable('saved_events', {
@@ -114,12 +114,12 @@ const savedEvents = pgTable('saved_events', {
 
 ---
 
-## Note di design
+## Design Notes
 
-**`startLocationName` / `endLocationName`** — nel map picker l'utente digita un'etichetta testuale e sceglie le coordinate sulla mappa. Con il geocoding server-side futuro, lo stesso campo riceve l'indirizzo digitato e le coordinate vengono calcolate dal backend. Nessuna migrazione necessaria.
+**`startLocationName` / `endLocationName`** — in the map picker the user types a text label and selects coordinates on the map. With future server-side geocoding, the same field receives the typed address and the backend computes the coordinates. No migration required.
 
-**`coverImageKey`** — stringa opaca (es. `"covers/abc123.jpg"`). Il `StorageService` nel backend la risolve in una presigned URL. Il frontend non conosce mai il provider sottostante.
+**`coverImageKey`** — opaque string (e.g. `"covers/abc123.jpg"`). The `StorageService` in the backend resolves it to a presigned URL. The frontend never knows the underlying provider.
 
-**`proposalId` su `events`** — FK opzionale verso la proposta originale per tracciabilità. Impostato dall'admin al momento dell'approvazione.
+**`proposalId` on `events`** — optional FK back to the originating proposal for audit purposes. Set by the admin at approval time.
 
-**`endLocationName/Lat/Lng` nullable** — supporta percorsi circolari in cui partenza e arrivo coincidono.
+**`endLocationName/Lat/Lng` nullable** — supports circular routes where start and end locations coincide.

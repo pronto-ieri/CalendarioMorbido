@@ -2,31 +2,31 @@
 
 ## MVP
 
-Voglio creare una webapp calendario, per tenere traccia degli eventi non competitivi cicloturistici in italia.
+A calendar web app for tracking non-competitive cyclo-tourism events in Italy.
 
-### Calendario Pubblico
+### Public Calendar
 
-Cé'un calendario pubblico di tutti gli eventi, che un utente (anche ospite) puo' consultare.
+A public calendar of all events, browsable by any user (including guests).
 
-Ogni evento deve specificare:
+Each event must specify:
 
-- data inizio/fine
-- luogo di partenza/arrivo
-- link al sito dell'evento
-- immagine di copertina
+- start/end date
+- start/end location
+- link to the event's official website
+- cover image
 
-Ci saranno dei filtri:
+Filters available:
 
-- eventi in giornata/su piu giorni
-- filtri per regione
+- single-day / multi-day events
+- filter by region
 
-Ci deve essere una vista a mappa per visualizzare gli eventi.
+A map view must be available to visualise events geographically.
 
-### Area Riservata
+### Members Area
 
-Un utente registrato puo' aggiungere gli eventi al proprio calendario personale.
-Ci deve essere una sezione per proporre al gestore del calendario pubblico di aggiungere un evento al calendario pubblico.
+A registered user can save events to their personal calendar.
+There must be a section to propose new events to the public calendar manager for approval.
 
-### Area Gestore del calendario pubblico
+### Calendar Manager Area
 
-Ci sara' l'elenco delle richieste da approvare.
+A queue of submitted proposals pending approval.

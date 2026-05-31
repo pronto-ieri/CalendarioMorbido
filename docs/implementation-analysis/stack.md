@@ -1,6 +1,6 @@
-# Architettura Tecnica — CalendarioMorbido
+# Tech Stack — CalendarioMorbido
 
-## Stack Finale
+## Final Stack
 
 ```
 Railway
@@ -8,105 +8,93 @@ Railway
 ├── Fastify (TypeScript)        → API Backend
 └── PostgreSQL + Drizzle        → Database + Migrations
 
-MapLibre GL JS                  → Rendering mappa (frontend)
+MapLibre GL JS                  → Map rendering (frontend)
 MapTiler                        → Tile hosting (free tier, OSM-based)
 ```
 
-Tutto il deployment avviene su **Railway**, unica piattaforma. I servizi comunicano tramite la rete privata interna di Railway.
+All services are deployed on **Railway** as a single platform. Services communicate over Railway's internal private network.
 
 ---
 
 ## Frontend — Next.js (TypeScript)
 
-- Server-side rendering per il calendario pubblico e le pagine evento (SEO + performance mobile)
-- Sezioni auth-gated (calendario personale, form proposta) renderizzate client-side
-- Mobile-first, lingua italiana
-- Deploy su Railway come servizio separato dal backend
+- Server-side rendering for the public calendar and event pages (SEO + mobile performance)
+- Auth-gated sections (personal calendar, proposal form) rendered client-side
+- Mobile-first, Italian-language UI
+- Deployed on Railway as a service separate from the backend
 
 ---
 
 ## Backend — Fastify (TypeScript)
 
-Layer API esplicito, separato dal frontend. Scelta rispetto alle API routes di Next.js per:
-- Separazione netta delle responsabilità
-- Maggiore controllo sulla logica backend
-- Scalabilità indipendente
+An explicit API layer, decoupled from the frontend. Chosen over Next.js API routes for:
+- Clear separation of concerns
+- Greater control over backend logic
+- Independent scalability
 
-### Autenticazione
+### Authentication
 
-Implementata direttamente in Fastify per l'MVP:
-- `@fastify/jwt` per la gestione dei token JWT
-- `bcrypt` per l'hashing delle password
-- Tabella `users` nel database
-- Email/password come unico metodo di accesso per l'MVP
-
-Per il reset password è necessario un provider email esterno (es. Resend o SendGrid).
-OAuth (Google, GitHub, ecc.) rimandato a post-MVP.
-
-> Alternativa considerata e scartata per l'MVP: **Supabase Auth** (troppo overhead) o **Clerk** (costo e dipendenza esterna). L'auth custom in Fastify richiede ~1-2 giorni di lavoro ed è sufficiente per il MVP.
+Handled by Better Auth running inside the Fastify process. See [Authentication](./authentication.md) for the full decision rationale.
 
 ---
 
 ## Database — PostgreSQL + Drizzle ORM
 
-### Perché Drizzle
+### Why Drizzle
 
-- Schema definito in TypeScript — fonte di verità unica
-- `drizzle-kit generate` produce file di migrazione SQL a partire dal diff dello schema
-- `drizzle-kit migrate` applica le migrazioni pendenti
-- I file di migrazione sono SQL puro, facili da revisionare in PR
-- Lightweight, senza magie nascoste, compatibile con Fastify
+- Schema defined in TypeScript — single source of truth
+- `drizzle-kit generate` produces SQL migration files from schema diffs
+- `drizzle-kit migrate` applies pending migrations
+- Migration files are plain SQL — easy to review in PRs
+- Lightweight, no hidden magic, compatible with Fastify
 
-### Gestione delle migrazioni in deploy
+### Migration management on deploy
 
 ```
 git push
-  → Railway builda il servizio Fastify
-  → esegue: npx drizzle-kit migrate   ← applica le migrazioni pendenti
-  → avvia: node server.js
+  → Railway builds the Fastify service
+  → runs: npx drizzle-kit migrate   ← applies pending migrations
+  → starts: node server.js
 ```
 
-Il comando di migrazione viene configurato come pre-start command nelle impostazioni del servizio Railway.
+The migration command is configured as a pre-start command in the Railway service settings.
 
-> Attenzione: evitare migrazioni distruttive (DROP COLUMN, RENAME) senza un periodo di transizione se frontend e backend deployano in modo indipendente. Per l'MVP non è un problema rilevante.
-
----
-
-## Mappa — MapLibre GL JS + MapTiler
-
-Mapbox è stato considerato ma scartato per:
-- Licenza proprietaria (GL JS v2+)
-- Pricing basato su Monthly Active Users (50k map loads/mese nel free tier)
-
-**MapLibre GL JS** è il fork open-source di Mapbox GL JS v1:
-- API quasi identica a Mapbox
-- Completamente gratuito, nessun vendor lock-in
-- Supporta clustering, stili custom, interazione fluida su mobile
-
-**MapTiler** fornisce i tile (immagini/strade basate su OSM):
-- Free tier: 100.000 tile requests/mese
-- Eventuale migrazione ad altro provider semplice grazie a MapLibre
-
-La mappa è una feature di primo piano nell'applicazione, non accessoria.
+> Avoid destructive migrations (DROP COLUMN, RENAME) without a transition period if frontend and backend deploy independently. Not a concern for MVP.
 
 ---
 
-## Ruoli Utente e Permessi
+## Map — MapLibre GL JS + MapTiler
 
-| Ruolo | Capacità |
+Mapbox was considered and ruled out due to:
+- Proprietary licence (GL JS v2+)
+- MAU-based pricing (50k map loads/month on the free tier)
+
+**MapLibre GL JS** is the open-source fork of Mapbox GL JS v1:
+- Nearly identical API to Mapbox
+- Completely free, no vendor lock-in
+- Supports clustering, custom styles, smooth mobile interaction
+
+**MapTiler** provides the tiles (OSM-based imagery and roads):
+- Free tier: 100,000 tile requests/month
+- Migrating to another provider is straightforward thanks to MapLibre
+
+The map is a first-class feature of the application, not a secondary one.
+
+---
+
+## User Roles & Permissions
+
+| Role | Capabilities |
 | --- | --- |
-| **Guest** | Visualizza calendario pubblico, filtra eventi, vede dettagli e mappa |
-| **Utente registrato** | Salva eventi nel calendario personale, propone nuovi eventi, monitora stato proposte |
-| **Amministratore** | Accesso diretto al DB per approvare/rifiutare proposte (MVP) |
+| **Guest** | Browse public calendar, filter events, view event details and map |
+| **Registered User** | Save events to personal calendar, propose new events, track proposal status |
+| **Administrator** | Direct DB access to approve/reject proposals (MVP) |
 
-I permessi sono applicati a livello di middleware Fastify tramite il ruolo codificato nel JWT.
+Permissions are enforced at the Fastify middleware level using the role encoded in the JWT.
 
 ---
 
-## Decisioni Aperte
+## Open Decisions
 
-- Struttura esatta del data model (da definire)
-- Superficie API (endpoint da definire)
-- Obbligatorietà dei campi nel form di proposta evento
-- Flusso di registrazione/login (ancora da progettare nei wireframe)
-- Strategia di autenticazione: auth custom in Fastify (`@fastify/jwt` + `bcrypt`) vs soluzione gestita (Clerk, Better Auth). Da valutare complessità, tempi di sviluppo e necessità di OAuth
+- Mandatory vs optional fields in the event proposal form
+- Login/registration flow (not yet wireframed)

@@ -1,14 +1,14 @@
 # Implementation Analysis — CalendarioMorbido
 
-Documentazione delle decisioni architetturali e implementative del progetto, prodotta nella fase di analisi pre-sviluppo.
+Documentation of architectural and implementation decisions produced during the pre-development analysis phase.
 
-## Stack e infrastruttura
+## Stack & Infrastructure
 
-- [Stack tecnico](./stack.md) — hosting, frontend, backend, database, mappa, migrazioni e ruoli utente
-- [Autenticazione](./authentication.md) — confronto tra librerie e servizi, decisione finale
+- [Tech Stack](./stack.md) — hosting, frontend, backend, database, map, migrations and user roles
+- [Authentication](./authentication.md) — library and service comparison, final decision
 
-## Implementazione
+## Implementation
 
-- [Data Model](./model-proposal.md) — schema Drizzle, tabelle, enums e note di design
-- [ER Diagram](./er-diagram.puml) — diagramma entità-relazioni in PlantUML
-- [API Surface](./api-surface.md) — endpoint REST, convenzioni di paginazione e flusso di approvazione
+- [Data Model](./model-proposal.md) — Drizzle schema, tables, enums and design notes
+- [ER Diagram](./er-diagram.puml) — entity-relationship diagram in PlantUML
+- [API Surface](./api-surface.md) — REST endpoints, pagination conventions and approval flow

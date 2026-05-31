@@ -1,61 +1,61 @@
-# Autenticazione — Analisi e Decisione
+# Authentication — Analysis and Decision
 
-## Contesto
+## Context
 
-Due librerie popolari sono state escluse a priori:
+Two popular libraries were ruled out upfront:
 
-- **Lucia** — deprecato ufficialmente a inizio 2025, ora solo risorsa didattica
-- **Auth.js v5** — in beta da quasi 2 anni, nessun supporto Fastify rilasciato, manutenzione trasferita al team di Better Auth. Scartato.
+- **Lucia** — officially deprecated in early 2025, now a learning resource only
+- **Auth.js v5** — in beta for nearly two years, no released Fastify support, maintenance transferred to the Better Auth team. Ruled out.
 
 ---
 
-## Confronto
+## Comparison
 
-| Criterio | Clerk | Auth0 | Better Auth (self-hosted) | Custom @fastify/jwt + bcrypt |
+| Criterion | Clerk | Auth0 | Better Auth (self-hosted) | Custom @fastify/jwt + bcrypt |
 | --- | --- | --- | --- | --- |
-| **Free tier** | 50K MAU | 25K MAU | Illimitato (solo infrastruttura) | Illimitato |
-| **Costo** | $25/mo (Pro) | $35/mo (Essentials) | Gratis (MIT) | Gratis |
-| **Email/password** | Sì | Sì | Sì | DIY |
-| **Email verification** | Sì | Sì | Sì (serve email sender) | DIY |
-| **Password reset** | Sì | Sì | Sì (serve email sender) | DIY |
-| **OAuth providers** | Sì (Pro per illimitati) | Sì | Sì (molti built-in) | DIY |
-| **MFA** | Solo piano Pro | Solo Essentials+ | Sì (plugin gratuito) | DIY |
-| **Dove stanno i dati utente** | Server Clerk (EU) | Server Auth0 (EU) | PostgreSQL proprio | PostgreSQL proprio |
-| **TypeScript** | Eccellente | Buono | Eccellente | Dipende dall'implementazione |
-| **Supporto Fastify** | SDK ufficiale | SDK ufficiale (apr 2025) | Guida ufficiale + plugin community | Nativo |
-| **Tempo al funzionante** | 2–4 ore | 4–8 ore | 4–6 ore | 2–4 settimane |
-| **Manutenzione ongoing** | Quasi zero | Bassa | Bassa-media | Alta |
-| **Vendor lock-in** | Alto | Alto | Nessuno | Nessuno |
+| **Free tier** | 50K MAU | 25K MAU | Unlimited (infra cost only) | Unlimited |
+| **Paid starts at** | $25/mo (Pro) | $35/mo (Essentials) | Free (MIT) | Free |
+| **Email/password** | Yes | Yes | Yes | DIY |
+| **Email verification** | Yes | Yes | Yes (requires email sender) | DIY |
+| **Password reset** | Yes | Yes | Yes (requires email sender) | DIY |
+| **OAuth providers** | Yes (Pro for unlimited) | Yes | Yes (many built-in) | DIY |
+| **MFA** | Pro plan only | Essentials+ only | Yes (free plugin) | DIY |
+| **User data location** | Clerk servers (EU) | Auth0 servers (EU) | Own PostgreSQL | Own PostgreSQL |
+| **TypeScript** | Excellent | Good | Excellent | Depends on implementation |
+| **Fastify support** | Official SDK | Official SDK (Apr 2025) | Official guide + community plugin | Native |
+| **Time to working** | 2–4 hours | 4–8 hours | 4–6 hours | 2–4 weeks |
+| **Ongoing maintenance** | Near-zero | Low | Low-medium | High |
+| **Vendor lock-in** | High | High | None | None |
 
 ---
 
-## Analisi per opzione
+## Option Analysis
 
 ### Clerk
 
-Il migliore dei servizi gestiti. SDK Fastify ufficiale, 50K MAU gratis, setup in poche ore. I dati utente risiedono sui server Clerk (EU, GDPR-compliant), ma non sono propri. MFA disponibile solo dal piano Pro ($25/mo).
+The best managed service option. Official Fastify SDK, 50K MAU free, setup in a few hours. User data resides on Clerk servers (EU, GDPR-compliant) but is not owned by the project. MFA available on Pro plan only ($25/mo).
 
 ### Auth0
 
-Più complesso da configurare, free tier più basso (25K MAU), MFA a pagamento. Nessun vantaggio concreto rispetto a Clerk per questo caso d'uso.
+More complex to configure, lower free tier (25K MAU), MFA costs extra. No concrete advantage over Clerk for this use case.
 
 ### Better Auth (self-hosted)
 
-Libreria MIT, gira all'interno del processo Fastify, i dati utente stanno nel PostgreSQL già su Railway. OAuth, MFA, email verification e password reset inclusi come plugin gratuiti. Integrazione nativa con Drizzle. YC-backed ($5M funding), rischio abbandono basso. Unico overhead: configurare un email sender per verification e reset (Resend: gratis fino a 3K email/mese).
+MIT library running inside the Fastify process. User data stays in the PostgreSQL already on Railway. OAuth, MFA, email verification and password reset included as free plugins. Native Drizzle integration. YC-backed ($5M funding), low abandonment risk. Only overhead: configuring an email sender for verification and reset (Resend: free up to 3K emails/month).
 
 ### Custom @fastify/jwt + bcrypt
 
-Controllo totale, zero dipendenze esterne. Implementare correttamente refresh token rotation, revocation, rate limiting e tutti i flow di sicurezza richiede però 2–4 settimane. Non giustificato per l'MVP.
+Full control, zero external dependencies. However, correctly implementing refresh token rotation, revocation, rate limiting and all security flows requires 2–4 weeks. Not justified for MVP.
 
 ---
 
-## Decisione
+## Decision
 
-**Better Auth self-hosted** è la scelta raccomandata per questo progetto:
+**Better Auth self-hosted** is the recommended choice for this project:
 
-- I dati utente restano nel PostgreSQL su Railway — GDPR risolto, nessun vendor lock-in
-- Zero costo per-utente, nessuna sorpresa con la crescita
-- Fastify supportato ufficialmente, esistono template Railway pronti con questo stack
-- Integrazione diretta con Drizzle (già scelto per le migrazioni)
+- User data stays in PostgreSQL on Railway — GDPR handled, no vendor lock-in
+- Zero per-user cost, no billing surprises as the app grows
+- Fastify officially supported, Railway templates exist for this exact stack
+- Direct integration with Drizzle (already chosen for migrations)
 
-**Alternativa** se si vuole zero manutenzione e si accetta che i dati utente risiedano su server terzi: **Clerk** (SDK Fastify ufficiale, 50K MAU gratis).
+**Alternative** if zero maintenance is preferred and storing user data on third-party servers is acceptable: **Clerk** (official Fastify SDK, 50K MAU free).

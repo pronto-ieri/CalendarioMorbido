@@ -1,12 +1,12 @@
 # API Surface
 
-Protocollo: **REST**. Base path: `/api`.
+Protocol: **REST**. Base path: `/api`.
 
-## Convenzioni
+## Conventions
 
-### Paginazione
+### Pagination
 
-Tutte le liste paginate restituono un envelope standard:
+All paginated lists return a standard envelope:
 
 ```json
 {
@@ -17,26 +17,26 @@ Tutte le liste paginate restituono un envelope standard:
 }
 ```
 
-### Autenticazione
+### Authentication
 
-Gli endpoint protetti richiedono il JWT di sessione rilasciato da Better Auth nell'header:
+Protected endpoints require the session JWT issued by Better Auth in the header:
 
 ```
 Authorization: Bearer <token>
 ```
 
-### Errori
+### Errors
 
 ```json
 {
   "error": "PROPOSAL_NOT_FOUND",
-  "message": "La proposta richiesta non esiste."
+  "message": "The requested proposal does not exist."
 }
 ```
 
 ---
 
-## Events (pubblici)
+## Events (public)
 
 | Method | Path | Auth |
 | --- | --- | --- |
@@ -48,7 +48,7 @@ Authorization: Bearer <token>
 
 Query params:
 
-| Param | Tipo | Default |
+| Param | Type | Default |
 | --- | --- | --- |
 | `region` | `RegionEnum` | — |
 | `type` | `"single" \| "multi"` | — |
@@ -57,7 +57,7 @@ Query params:
 
 ### `GET /api/events/map`
 
-Payload leggero per i marker della mappa, senza paginazione.
+Lightweight payload for map markers, no pagination.
 
 ```json
 [
@@ -76,7 +76,7 @@ Payload leggero per i marker della mappa, senza paginazione.
 
 ---
 
-## Auth (gestito da Better Auth)
+## Auth (managed by Better Auth)
 
 ```
 POST  /api/auth/sign-up
@@ -88,23 +88,23 @@ POST  /api/auth/verify-email
 
 ---
 
-## Calendario personale (utente autenticato)
+## Personal Calendar (authenticated user)
 
 | Method | Path | Auth |
 | --- | --- | --- |
-| `GET` | `/api/me/saved-events` | Sì |
-| `PUT` | `/api/me/saved-events/:eventId` | Sì |
-| `DELETE` | `/api/me/saved-events/:eventId` | Sì |
+| `GET` | `/api/me/saved-events` | Yes |
+| `PUT` | `/api/me/saved-events/:eventId` | Yes |
+| `DELETE` | `/api/me/saved-events/:eventId` | Yes |
 
 ---
 
-## Proposte (utente autenticato)
+## Proposals (authenticated user)
 
 | Method | Path | Auth |
 | --- | --- | --- |
-| `GET` | `/api/me/proposals` | Sì |
-| `GET` | `/api/me/proposals/:id` | Sì |
-| `POST` | `/api/proposals` | Sì |
+| `GET` | `/api/me/proposals` | Yes |
+| `GET` | `/api/me/proposals/:id` | Yes |
+| `POST` | `/api/proposals` | Yes |
 
 ### `POST /api/proposals`
 
@@ -126,7 +126,7 @@ POST  /api/auth/verify-email
 }
 ```
 
-`endLocationName`, `endLat`, `endLng` sono opzionali — omessi per percorsi circolari.
+`endLocationName`, `endLat`, `endLng` are optional — omitted for circular routes.
 
 ---
 
@@ -142,7 +142,7 @@ POST  /api/auth/verify-email
 
 Query params:
 
-| Param | Tipo | Default |
+| Param | Type | Default |
 | --- | --- | --- |
 | `status` | `"pending" \| "approved" \| "rejected"` | `"pending"` |
 | `page` | `number` | `1` |
@@ -155,12 +155,12 @@ Query params:
 ```
 
 ```json
-{ "action": "reject", "rejectionReason": "Evento già presente nel calendario." }
+{ "action": "reject", "rejectionReason": "Event already present in the calendar." }
 ```
 
-Quando `action: "approve"`, il backend esegue in un'unica transazione:
-1. Copia i campi dalla proposta e crea il record in `events`
-2. Imposta `proposals.status = "approved"`, `proposals.reviewedAt = now()`, `proposals.eventId = <nuovo id>`
+When `action: "approve"`, the backend executes atomically in a single transaction:
+1. Copies fields from the proposal and creates the record in `events`
+2. Sets `proposals.status = "approved"`, `proposals.reviewedAt = now()`, `proposals.eventId = <new id>`
 
 ---
 
@@ -168,11 +168,11 @@ Quando `action: "approve"`, il backend esegue in un'unica transazione:
 
 | Method | Path | Auth |
 | --- | --- | --- |
-| `POST` | `/api/uploads/presign` | Sì |
+| `POST` | `/api/uploads/presign` | Yes |
 
 ### `POST /api/uploads/presign`
 
-Il backend genera una presigned URL tramite il `StorageService`. Il frontend carica direttamente sul provider e poi include la `key` nel body della proposta.
+The backend generates a presigned URL via the `StorageService`. The frontend uploads directly to the provider and then includes the `key` in the proposal body.
 
 **Response:**
 ```json
