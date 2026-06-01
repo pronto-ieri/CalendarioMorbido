@@ -1,0 +1,122 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { approveProposal, rejectProposal } from "@/lib/actions/admin";
+import { formatDateRange } from "@/lib/utils/dates";
+import { coverUrl } from "@/lib/utils/storage";
+import type { ProposalRow } from "@/lib/types/db";
+
+export default function AdminProposalCard({ proposal }: { proposal: ProposalRow }) {
+  const [pending, startTransition] = useTransition();
+  const [rejecting, setRejecting] = useState(false);
+  const [reason, setReason] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const cover = coverUrl(proposal.cover_image_key);
+
+  function approve() {
+    setError(null);
+    startTransition(async () => {
+      const res = await approveProposal(proposal.id);
+      if (res?.error) setError(res.error);
+    });
+  }
+
+  function confirmReject() {
+    setError(null);
+    startTransition(async () => {
+      const res = await rejectProposal(proposal.id, reason.trim());
+      if (res?.error) setError(res.error);
+    });
+  }
+
+  return (
+    <li className="card overflow-hidden">
+      <div className="flex gap-3 p-3">
+        <div className="h-20 w-28 shrink-0 overflow-hidden rounded-lg bg-paper-soft">
+          {cover ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={cover} alt="" className="h-full w-full object-cover" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-2xl">
+              🚲
+            </div>
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="font-head text-xl leading-tight">{proposal.title}</p>
+          <p className="font-body text-sm text-ink-soft">
+            {proposal.region} ·{" "}
+            {formatDateRange(proposal.start_date, proposal.end_date)}
+          </p>
+          <p className="font-body text-sm text-ink-soft">
+            📍 {proposal.start_location_name}
+            {proposal.end_location_name ? ` → ${proposal.end_location_name}` : ""}
+          </p>
+          {proposal.official_url && (
+            <a
+              href={proposal.official_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-body text-sm text-accent-deep underline"
+            >
+              Sito ufficiale ↗
+            </a>
+          )}
+        </div>
+      </div>
+
+      {proposal.description && (
+        <p className="px-3 pb-2 font-body text-sm">{proposal.description}</p>
+      )}
+
+      {error && <p className="px-3 font-body text-sm text-red-700">{error}</p>}
+
+      <div className="flex flex-col gap-2 border-t border-line p-3">
+        {rejecting ? (
+          <div className="space-y-2">
+            <textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Motivo del rifiuto (opzionale)"
+              rows={2}
+              className="field-input"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={confirmReject}
+                disabled={pending}
+                className="btn btn-ghost flex-1 disabled:opacity-60"
+              >
+                Conferma rifiuto
+              </button>
+              <button
+                onClick={() => setRejecting(false)}
+                disabled={pending}
+                className="btn btn-ghost"
+              >
+                Annulla
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <button
+              onClick={approve}
+              disabled={pending}
+              className="btn btn-primary flex-1 disabled:opacity-60"
+            >
+              {pending ? "..." : "Approva"}
+            </button>
+            <button
+              onClick={() => setRejecting(true)}
+              disabled={pending}
+              className="btn btn-ghost flex-1 disabled:opacity-60"
+            >
+              Rifiuta
+            </button>
+          </div>
+        )}
+      </div>
+    </li>
+  );
+}

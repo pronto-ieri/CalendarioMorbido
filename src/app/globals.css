@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Warm paper aesthetic + cycling-green hi-vis accent */
+  --paper: oklch(0.985 0.006 95);
+  --paper-soft: oklch(0.965 0.01 95);
+  --ink: #29261b;
+  --ink-soft: #6b6657;
+  --accent: oklch(0.84 0.19 128);
+  --accent-deep: oklch(0.66 0.16 128);
+  --line: oklch(0.9 0.01 95);
+}
+
+html {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 font-body text-base font-medium transition-colors;
+  }
+  .btn-primary {
+    background: var(--accent);
+    @apply text-ink hover:brightness-95;
+  }
+  .btn-ghost {
+    @apply border border-line bg-paper text-ink hover:bg-paper-soft;
+  }
+  .card {
+    @apply rounded-card border border-line bg-paper shadow-sm;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full border border-line bg-paper px-3 py-1 text-sm transition-colors hover:bg-paper-soft;
+  }
+  .chip-active {
+    background: var(--accent);
+    @apply border-transparent text-ink;
+  }
+  .field-label {
+    @apply mb-1 block font-body text-sm text-ink-soft;
+  }
+  .field-input {
+    @apply w-full rounded-lg border border-line bg-paper px-3 py-2 text-ink outline-none focus:border-accent-deep;
+  }
+}
