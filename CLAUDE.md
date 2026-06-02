@@ -86,6 +86,10 @@ Other open design questions: mandatory vs optional fields in the proposal form, 
 
 Mobile-first. Warm paper aesthetic with cycling-green hi-vis accent. Italian-language UI throughout.
 
-# HOW TO MANAGE DOCS
+## HOW TO MANAGE DOCS
 
 In this mvp phase ignore all the `docs/archive` folder, since it is a brainstorming for a further project phase, not needed for now.
+
+## LANGUAGE
+
+even if I talk to claude code throught terminal in other languages, always produce code artifacts, documentation, commit messages and all the persisted information about this project in English.
