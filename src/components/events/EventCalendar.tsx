@@ -147,11 +147,11 @@ export default function EventCalendar({
       {/* Legenda */}
       <div className="flex flex-wrap gap-3 font-body text-xs text-ink-soft">
         <span className="flex items-center gap-1">
-          <span className="inline-block h-3 w-4 rounded bg-accent" />{" "}
+          <span className="inline-block h-2.5 w-2.5 rounded-full bg-accent" />{" "}
           {t("oneDay")}
         </span>
         <span className="flex items-center gap-1">
-          <span className="inline-block h-3 w-6 rounded bg-accent-alt" />{" "}
+          <span className="inline-block h-2.5 w-6 rounded-full bg-accent-alt" />{" "}
           {t("multiDay")}
         </span>
         {savedIds.length > 0 && (
@@ -229,32 +229,67 @@ export default function EventCalendar({
                 })}
               </div>
 
-              {/* Corsie con le barre eventi */}
-              <div className="space-y-0.5 px-1 pb-1 pt-0.5">
+              {/* Corsie con pallini (un giorno) e strisce (più giorni) */}
+              <div className="min-h-[0.75rem] space-y-1 px-0.5 pb-1.5 pt-1">
                 {lanes.map((lane, li) => (
-                  <div key={li} className="grid grid-cols-7 gap-0.5">
+                  <div key={li} className="grid grid-cols-7">
                     {lane.map((seg) => {
-                      const multi = !isSingleDay(
+                      const single = isSingleDay(
                         seg.event.start_date,
                         seg.event.end_date,
                       );
+                      const isSaved = saved.has(seg.event.id);
+                      const color = single ? "bg-accent" : "bg-accent-alt";
+                      const ring = isSaved ? "ring-1 ring-ink/50" : "";
+
+                      if (single) {
+                        // Pallino centrato nel giorno dell'evento.
+                        return (
+                          <Link
+                            key={seg.event.id}
+                            href={`/eventi/${seg.event.id}`}
+                            title={seg.event.title}
+                            aria-label={seg.event.title}
+                            style={{ gridColumn: `${seg.startIdx + 1} / span 1` }}
+                            className="flex items-center justify-center hover:brightness-95"
+                          >
+                            <span
+                              className={`h-2.5 w-2.5 rounded-full ${color} ${ring}`}
+                            />
+                          </Link>
+                        );
+                      }
+
+                      // Striscia centrata sui giorni: il corpo dritto termina al
+                      // centro del giorno d'inizio/fine (sotto il numero) e il
+                      // semicerchio parte da lì estendendosi verso l'esterno di un
+                      // raggio (= metà altezza della striscia). Dove l'evento
+                      // prosegue nella settimana adiacente l'estremo è piatto e a
+                      // filo del bordo della cella (continuazione).
+                      // Mezza cella = 100/(2*span) % della larghezza del segmento;
+                      // sottraggo il raggio del cappuccio per allungare la pillola.
+                      const cap = "0.3125rem"; // raggio = h-2.5 / 2
+                      const half = `calc(${100 / (2 * seg.span)}% - ${cap})`;
                       return (
                         <Link
                           key={seg.event.id}
                           href={`/eventi/${seg.event.id}`}
                           title={seg.event.title}
+                          aria-label={seg.event.title}
                           style={{
                             gridColumn: `${seg.startIdx + 1} / span ${seg.span}`,
                           }}
-                          className={`block truncate px-1 text-[11px] font-medium leading-5 text-ink hover:brightness-95 ${
-                            multi ? "bg-accent-alt" : "bg-accent"
-                          } ${seg.continuesLeft ? "" : "rounded-l"} ${
-                            seg.continuesRight ? "" : "rounded-r"
-                          }`}
+                          className="flex items-center hover:brightness-95"
                         >
-                          {saved.has(seg.event.id) && "✓ "}
-                          {seg.continuesLeft && "… "}
-                          {seg.event.title}
+                          <span
+                            style={{
+                              marginLeft: seg.continuesLeft ? 0 : half,
+                              marginRight: seg.continuesRight ? 0 : half,
+                            }}
+                            className={`h-2.5 flex-1 ${color} ${ring} ${
+                              seg.continuesLeft ? "" : "rounded-l-full"
+                            } ${seg.continuesRight ? "" : "rounded-r-full"}`}
+                          />
                         </Link>
                       );
                     })}
