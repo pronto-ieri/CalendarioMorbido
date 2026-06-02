@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getUser, isAdmin } from "@/lib/auth/require-user";
+import MobileNav from "@/components/layout/MobileNav";
 
 export default async function Header() {
   const user = await getUser();
@@ -7,15 +8,17 @@ export default async function Header() {
 
   return (
     <header className="sticky top-0 z-20 border-b border-line bg-paper/90 backdrop-blur">
-      <div className="flex items-center justify-between px-4 py-3">
-        <Link href="/" className="font-head text-2xl font-bold leading-none">
+      <div className="flex items-center justify-between gap-2 px-4 py-3">
+        <Link
+          href="/"
+          className="font-head text-xl font-bold leading-none sm:text-2xl"
+        >
           CalendarioMorbido
           <span className="ml-1 align-middle text-accent-deep">🚲</span>
         </Link>
-        <nav className="flex items-center gap-3 font-body text-sm">
-          <Link href="/mappa" className="hover:text-accent-deep">
-            Mappa
-          </Link>
+
+        {/* Desktop nav */}
+        <nav className="hidden items-center gap-3 font-body text-sm sm:flex">
           {user ? (
             <>
               <Link href="/calendario" className="hover:text-accent-deep">
@@ -41,6 +44,9 @@ export default async function Header() {
             </Link>
           )}
         </nav>
+
+        {/* Mobile nav */}
+        <MobileNav authed={!!user} admin={admin} />
       </div>
     </header>
   );

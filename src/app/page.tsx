@@ -1,6 +1,5 @@
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import EventGrid from "@/components/events/EventGrid";
+import EventCalendar from "@/components/events/EventCalendar";
 import EventFilters from "@/components/events/EventFilters";
 import { isSingleDay } from "@/lib/utils/dates";
 import type { EventRow } from "@/lib/types/db";
@@ -32,20 +31,28 @@ export default async function HomePage({
     events = events.filter((e) => !isSingleDay(e.start_date, e.end_date));
   }
 
+  // Eventi già salvati dall'utente loggato → contrassegnati nel calendario.
+  let savedIds: string[] = [];
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (user) {
+    const { data: savedData } = await supabase
+      .from("saved_events")
+      .select("event_id")
+      .eq("user_id", user.id);
+    savedIds = (savedData ?? []).map((r) => r.event_id as string);
+  }
+
   return (
-    <div>
-      <div className="mb-4 flex items-end justify-between">
-        <div>
-          <h1 className="font-head text-4xl font-bold leading-none">
-            Calendario pubblico
-          </h1>
-          <p className="font-body text-ink-soft">
-            Pedalate cicloturistiche non competitive in Italia
-          </p>
-        </div>
-        <Link href="/mappa" className="chip whitespace-nowrap">
-          🗺️ Mappa
-        </Link>
+    <div className="space-y-4">
+      <div>
+        <h1 className="font-head text-4xl font-bold leading-none">
+          Calendario pubblico
+        </h1>
+        <p className="font-body text-ink-soft">
+          Pedalate cicloturistiche non competitive in Italia
+        </p>
       </div>
 
       <EventFilters />
@@ -55,7 +62,7 @@ export default async function HomePage({
           Errore nel caricamento degli eventi. Hai configurato Supabase? ({error.message})
         </p>
       ) : (
-        <EventGrid events={events} />
+        <EventCalendar events={events} savedIds={savedIds} />
       )}
     </div>
   );

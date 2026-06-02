@@ -11,12 +11,10 @@ export interface EventContent {
   region: Region;
   official_url: string | null;
   cover_image_key: string | null;
-  start_location_name: string;
-  start_lat: number | string;
-  start_lng: number | string;
-  end_location_name: string | null;
-  end_lat: number | string | null;
-  end_lng: number | string | null;
+  start_comune: string;
+  start_provincia: string;
+  end_comune: string | null;
+  end_provincia: string | null;
 }
 
 export interface EventRow extends EventContent {
@@ -40,9 +38,3 @@ export interface SavedEventRow {
   event_id: string;
   saved_at: string;
 }
-
-// Payload leggero per i marker della mappa.
-export type EventMapMarker = Pick<
-  EventRow,
-  "id" | "title" | "start_date" | "end_date" | "region" | "start_lat" | "start_lng"
->;

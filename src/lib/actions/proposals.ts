@@ -12,10 +12,6 @@ function optStr(fd: FormData, key: string): string | null {
   const v = str(fd, key);
   return v === "" ? null : v;
 }
-function optNum(fd: FormData, key: string): number | null {
-  const v = str(fd, key);
-  return v === "" ? null : Number(v);
-}
 
 export async function submitProposal(_prev: unknown, formData: FormData) {
   const supabase = await createClient();
@@ -34,11 +30,6 @@ export async function submitProposal(_prev: unknown, formData: FormData) {
   if (endDate < startDate)
     return { error: "La data di fine non può precedere quella di inizio." };
 
-  const startLat = optNum(formData, "start_lat");
-  const startLng = optNum(formData, "start_lng");
-  if (startLat == null || startLng == null)
-    return { error: "Le coordinate di partenza sono obbligatorie." };
-
   const payload = {
     user_id: user.id,
     status: "pending" as const,
@@ -49,16 +40,14 @@ export async function submitProposal(_prev: unknown, formData: FormData) {
     region,
     official_url: optStr(formData, "official_url"),
     cover_image_key: optStr(formData, "cover_image_key"),
-    start_location_name: str(formData, "start_location_name"),
-    start_lat: startLat,
-    start_lng: startLng,
-    end_location_name: optStr(formData, "end_location_name"),
-    end_lat: optNum(formData, "end_lat"),
-    end_lng: optNum(formData, "end_lng"),
+    start_comune: str(formData, "start_comune"),
+    start_provincia: str(formData, "start_provincia"),
+    end_comune: optStr(formData, "end_comune"),
+    end_provincia: optStr(formData, "end_provincia"),
   };
 
-  if (!payload.title || !payload.start_location_name)
-    return { error: "Titolo e luogo di partenza sono obbligatori." };
+  if (!payload.title || !payload.start_comune || !payload.start_provincia)
+    return { error: "Titolo, comune e provincia di partenza sono obbligatori." };
 
   const { error } = await supabase.from("proposals").insert(payload);
   if (error) return { error: error.message };

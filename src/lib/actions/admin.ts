@@ -1,5 +1,6 @@
 "use server";
 
+import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
@@ -30,4 +31,18 @@ export async function rejectProposal(proposalId: string, reason: string) {
 
   revalidatePath("/gestore");
   return { ok: true };
+}
+
+export async function deleteEvent(eventId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("delete_event", {
+    p_event_id: eventId,
+  });
+  if (error) return { error: error.message };
+
+  // La FK saved_events.event_id è ON DELETE CASCADE: l'evento sparisce anche
+  // dai calendari personali. Rinfreschiamo home e calendari salvati.
+  revalidatePath("/");
+  revalidatePath("/calendario");
+  redirect("/");
 }

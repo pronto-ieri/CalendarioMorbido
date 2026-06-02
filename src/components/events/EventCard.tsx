@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { EventRow } from "@/lib/types/db";
 import { formatDateRange, durationLabel } from "@/lib/utils/dates";
+import { formatRoute } from "@/lib/utils/location";
 import { coverUrl } from "@/lib/utils/storage";
 
 export default function EventCard({ event }: { event: EventRow }) {
@@ -33,9 +34,7 @@ export default function EventCard({ event }: { event: EventRow }) {
           {event.title}
         </h3>
         <p className="mt-1 font-body text-sm text-ink-soft">
-          📍 {event.start_location_name}
-          {event.end_location_name ? ` → ${event.end_location_name}` : ""} ·{" "}
-          {event.region}
+          📍 {formatRoute(event)} · {event.region}
         </p>
       </div>
     </Link>

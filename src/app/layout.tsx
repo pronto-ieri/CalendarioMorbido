@@ -1,19 +1,14 @@
 import type { Metadata } from "next";
-import { Caveat, Patrick_Hand } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import { ToastProvider } from "@/components/ui/Toast";
 
-const caveat = Caveat({
+const inter = Inter({
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  variable: "--font-head",
-});
-
-const patrickHand = Patrick_Hand({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-body",
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-sans",
 });
 
 export const metadata: Metadata = {
@@ -26,13 +21,15 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="it" className={`${caveat.variable} ${patrickHand.variable}`}>
+    <html lang="it" className={inter.variable}>
       <body className="font-body">
-        <div className="mx-auto flex min-h-screen w-full max-w-3xl flex-col">
-          <Header />
-          <main className="flex-1 px-4 pb-16 pt-4">{children}</main>
-          <Footer />
-        </div>
+        <ToastProvider>
+          <div className="mx-auto flex min-h-screen w-full max-w-3xl flex-col">
+            <Header />
+            <main className="flex-1 px-4 pb-16 pt-4">{children}</main>
+            <Footer />
+          </div>
+        </ToastProvider>
       </body>
     </html>
   );
