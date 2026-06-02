@@ -2,6 +2,8 @@
 
 ## MISC
 
+- IMPORTANTE: vogliamo supportare da subito l'internazionalizzazione
+  - per ora e' tutto in italiano, ma deve poter leggere la lingua di sistema del dispositivo e passare a quella
 - elimina il pulsante mappa perche' non la implementiamo in mvp.
 
 ### vista mobile

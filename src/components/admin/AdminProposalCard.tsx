@@ -3,29 +3,31 @@
 import { useState, useTransition } from "react";
 import { approveProposal, rejectProposal } from "@/lib/actions/admin";
 import { formatDateRange } from "@/lib/utils/dates";
+import { formatRoute } from "@/lib/utils/location";
 import { coverUrl } from "@/lib/utils/storage";
+import { useToast } from "@/components/ui/Toast";
 import type { ProposalRow } from "@/lib/types/db";
 
 export default function AdminProposalCard({ proposal }: { proposal: ProposalRow }) {
   const [pending, startTransition] = useTransition();
   const [rejecting, setRejecting] = useState(false);
   const [reason, setReason] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const { showToast } = useToast();
   const cover = coverUrl(proposal.cover_image_key);
 
   function approve() {
-    setError(null);
     startTransition(async () => {
       const res = await approveProposal(proposal.id);
-      if (res?.error) setError(res.error);
+      if (res?.error) showToast(res.error, "error");
+      else showToast("Proposta approvata e pubblicata", "success");
     });
   }
 
   function confirmReject() {
-    setError(null);
     startTransition(async () => {
       const res = await rejectProposal(proposal.id, reason.trim());
-      if (res?.error) setError(res.error);
+      if (res?.error) showToast(res.error, "error");
+      else showToast("Proposta rifiutata", "info");
     });
   }
 
@@ -49,8 +51,7 @@ export default function AdminProposalCard({ proposal }: { proposal: ProposalRow 
             {formatDateRange(proposal.start_date, proposal.end_date)}
           </p>
           <p className="font-body text-sm text-ink-soft">
-            📍 {proposal.start_location_name}
-            {proposal.end_location_name ? ` → ${proposal.end_location_name}` : ""}
+            📍 {formatRoute(proposal)}
           </p>
           {proposal.official_url && (
             <a
@@ -68,8 +69,6 @@ export default function AdminProposalCard({ proposal }: { proposal: ProposalRow 
       {proposal.description && (
         <p className="px-3 pb-2 font-body text-sm">{proposal.description}</p>
       )}
-
-      {error && <p className="px-3 font-body text-sm text-red-700">{error}</p>}
 
       <div className="flex flex-col gap-2 border-t border-line p-3">
         {rejecting ? (

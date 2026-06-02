@@ -11,11 +11,13 @@ export default {
         "ink-soft": "var(--ink-soft)",
         accent: "var(--accent)",
         "accent-deep": "var(--accent-deep)",
+        "accent-alt": "var(--accent-alt)",
+        "accent-alt-deep": "var(--accent-alt-deep)",
         line: "var(--line)",
       },
       fontFamily: {
-        head: ["var(--font-head)", "cursive"],
-        body: ["var(--font-body)", "system-ui", "sans-serif"],
+        head: ["var(--font-sans)", "system-ui", "sans-serif"],
+        body: ["var(--font-sans)", "system-ui", "sans-serif"],
       },
       borderRadius: {
         card: "1rem",

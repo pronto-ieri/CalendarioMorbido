@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import StaticMapBox from "@/components/events/StaticMapBox";
 import SaveButton from "@/components/events/SaveButton";
+import DeleteEventButton from "@/components/admin/DeleteEventButton";
+import { isAdmin } from "@/lib/auth/require-user";
 import { coverUrl } from "@/lib/utils/storage";
 import { formatDateRange, durationLabel } from "@/lib/utils/dates";
+import { formatPlace } from "@/lib/utils/location";
 import type { EventRow } from "@/lib/types/db";
 
 export const dynamic = "force-dynamic";
@@ -29,6 +31,8 @@ export default async function EventDetailPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  const admin = user ? await isAdmin() : false;
 
   let saved = false;
   if (user) {
@@ -79,20 +83,21 @@ export default async function EventDetailPage({
         </div>
       )}
 
-      <div>
+      <div className="card p-4">
         <h2 className="mb-2 font-head text-2xl">Percorso</h2>
-        <StaticMapBox
-          start={{
-            name: ev.start_location_name,
-            lat: ev.start_lat,
-            lng: ev.start_lng,
-          }}
-          end={
-            ev.end_location_name && ev.end_lat != null && ev.end_lng != null
-              ? { name: ev.end_location_name, lat: ev.end_lat, lng: ev.end_lng }
-              : null
-          }
-        />
+        <div className="flex flex-wrap items-center gap-2 font-body">
+          <span className="chip">
+            🟢 {formatPlace(ev.start_comune, ev.start_provincia)}
+          </span>
+          {ev.end_comune && (
+            <>
+              <span className="text-ink-soft">→</span>
+              <span className="chip">
+                🏁 {formatPlace(ev.end_comune, ev.end_provincia)}
+              </span>
+            </>
+          )}
+        </div>
       </div>
 
       {ev.official_url && (
@@ -106,6 +111,8 @@ export default async function EventDetailPage({
           <span className="text-accent-deep">Apri →</span>
         </a>
       )}
+
+      {admin && <DeleteEventButton eventId={ev.id} />}
 
       {/* CTA sticky in basso */}
       <div className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-paper/95 p-3 backdrop-blur">

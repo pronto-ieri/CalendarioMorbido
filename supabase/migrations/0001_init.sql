@@ -25,12 +25,10 @@ create table if not exists public.proposals (
   region text not null,
   official_url text,
   cover_image_key text,
-  start_location_name text not null,
-  start_lat numeric(9, 6) not null,
-  start_lng numeric(9, 6) not null,
-  end_location_name text,
-  end_lat numeric(9, 6),
-  end_lng numeric(9, 6),
+  start_comune text not null,
+  start_provincia text not null,
+  end_comune text,
+  end_provincia text,
   submitted_at timestamptz not null default now(),
   reviewed_at timestamptz,
   constraint proposals_region_chk check (region in (
@@ -51,12 +49,10 @@ create table if not exists public.events (
   region text not null,
   official_url text,
   cover_image_key text,
-  start_location_name text not null,
-  start_lat numeric(9, 6) not null,
-  start_lng numeric(9, 6) not null,
-  end_location_name text,
-  end_lat numeric(9, 6),
-  end_lng numeric(9, 6),
+  start_comune text not null,
+  start_provincia text not null,
+  end_comune text,
+  end_provincia text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint events_region_chk check (region in (
@@ -148,12 +144,11 @@ begin
 
   insert into public.events (
     proposal_id, title, description, start_date, end_date, region, official_url,
-    cover_image_key, start_location_name, start_lat, start_lng,
-    end_location_name, end_lat, end_lng)
+    cover_image_key, start_comune, start_provincia, end_comune, end_provincia)
   values (
     v_p.id, v_p.title, v_p.description, v_p.start_date, v_p.end_date, v_p.region,
-    v_p.official_url, v_p.cover_image_key, v_p.start_location_name, v_p.start_lat,
-    v_p.start_lng, v_p.end_location_name, v_p.end_lat, v_p.end_lng)
+    v_p.official_url, v_p.cover_image_key, v_p.start_comune, v_p.start_provincia,
+    v_p.end_comune, v_p.end_provincia)
   returning id into v_event_id;
 
   update public.proposals
@@ -161,6 +156,26 @@ begin
   where id = v_p.id;
 
   return v_event_id;
+end;
+$$;
+
+-- ----------------------------------------------------------------------------
+-- RPC: delete_event — cancellazione evento da parte di un gestore.
+-- events non ha policy di scrittura lato client; SECURITY DEFINER bypassa la RLS.
+-- La FK saved_events.event_id è ON DELETE CASCADE → spariscono anche i salvataggi.
+-- ----------------------------------------------------------------------------
+
+create or replace function public.delete_event(p_event_id uuid)
+returns void
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  if not public.is_admin() then
+    raise exception 'not authorized';
+  end if;
+
+  delete from public.events where id = p_event_id;
 end;
 $$;
 
