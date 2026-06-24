@@ -1,7 +1,7 @@
 package it.calendariomorbido.auth;
 
-import io.quarkus.arc.properties.IfBuildProperty;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.inject.Produces;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 
@@ -11,7 +11,7 @@ import java.util.Set;
 public class DevJwtProducer {
 
     @Produces
-    @IfBuildProperty(name = "quarkus.oidc.enabled", stringValue = "false")
+    @RequestScoped
     public JsonWebToken produceDevJwt() {
         String devSubject = System.getProperty("dev.jwt.subject", "00000000-0000-0000-0000-000000000000");
         String devGroups = System.getProperty("dev.jwt.groups", "user");
