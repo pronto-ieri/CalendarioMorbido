@@ -1,5 +1,6 @@
 package it.calendariomorbido.auth;
 
+import io.quarkus.arc.profile.IfBuildProfile;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.inject.Produces;
@@ -8,6 +9,7 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 import java.util.Set;
 
 @ApplicationScoped
+@IfBuildProfile("dev")
 public class DevJwtProducer {
 
     @Produces
